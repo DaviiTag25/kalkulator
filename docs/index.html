@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Profesjonalne kalkulatory finansowe - kredyt hipoteczny, leasing, zdolność kredytowa, kredyt samochodowy">
+  <title>Panel Kalkulatorów Finansowych</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #111a2b;
+      --accent-blue: #3b82f6;
+      --accent-green: #22c55e;
+      --accent-purple: #8b5cf6;
+      --accent-orange: #f97316;
+      --text: #e6eef8;
+      --muted: #93a4b8;
+      --border: #223049;
+    }
+    
+    * { 
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                  var(--bg);
+    }
+    
+    .container {
+      max-width: 1400px;
+      width: 100%;
+    }
+    
+    /* HEADER */
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+      animation: fadeInDown 0.6s ease;
+    }
+    
+    .logo {
+      font-size: 48px;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.3));
+    }
+    
+    .title {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+    
+    .subtitle {
+      font-size: clamp(16px, 2.5vw, 20px);
+      color: var(--muted);
+      font-weight: 400;
+      line-height: 1.6;
+    }
+    
+    /* PANEL KALKULATORÓW */
+    .calculator-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+    
+    .calc-card {
+      position: relative;
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      backdrop-filter: blur(10px);
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      padding: 32px 24px;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+    
+    .calc-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at center, var(--card-glow) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    
+    .calc-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: var(--card-accent);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4),
+                  0 0 0 1px var(--card-accent),
+                  0 0 60px var(--card-glow);
+    }
+    
+    .calc-card:hover::before {
+      opacity: 0.15;
+    }
+    
+    .calc-card:active {
+      transform: translateY(-4px) scale(1.01);
+    }
+    
+    /* Kolory dla kart */
+    .card-hipoteka {
+      --card-accent: var(--accent-blue);
+      --card-glow: rgba(59, 130, 246, 0.4);
+    }
+    
+    .card-leasing {
+      --card-accent: var(--accent-green);
+      --card-glow: rgba(34, 197, 94, 0.4);
+    }
+    
+    .card-zdolnosc {
+      --card-accent: var(--accent-purple);
+      --card-glow: rgba(139, 92, 246, 0.4);
+    }
+    
+    .card-samochod {
+      --card-accent: var(--accent-orange);
+      --card-glow: rgba(249, 115, 22, 0.4);
+    }
+    
+    /* IKONA */
+    .calc-icon-wrapper {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 24px;
+      position: relative;
+      transition: transform 0.4s ease;
+    }
+    
+    .calc-card:hover .calc-icon-wrapper {
+      transform: scale(1.1) rotate(5deg);
+    }
+    
+    .calc-icon-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--card-accent), transparent);
+      border-radius: 30px;
+      opacity: 0.15;
+      transition: all 0.4s ease;
+    }
+    
+    .calc-card:hover .calc-icon-bg {
+      opacity: 0.25;
+      transform: scale(1.1);
+    }
+    
+    .calc-icon {
+      font-size: 64px;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      filter: drop-shadow(0 4px 12px var(--card-glow));
+    }
+    
+    /* TREŚĆ KARTY */
+    .calc-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+      transition: color 0.3s ease;
+    }
+    
+    .calc-card:hover .calc-title {
+      color: var(--card-accent);
+    }
+    
+    .calc-description {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+      flex-grow: 1;
+    }
+    
+    .calc-features {
+      list-style: none;
+      width: 100%;
+      margin-bottom: 24px;
+      padding: 0;
+    }
+    
+    .calc-features li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      font-size: 13px;
+      color: var(--muted);
+      transition: all 0.3s ease;
+    }
+    
+    .calc-card:hover .calc-features li {
+      color: var(--text);
+    }
+    
+    .calc-features li::before {
+      content: '✓';
+      color: var(--card-accent);
+      font-weight: bold;
+      font-size: 14px;
+      width: 18px;
+      height: 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    /* PRZYCISK */
+    .calc-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      background: var(--card-accent);
+      color: white;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px var(--card-glow);
+    }
+    
+    .calc-card:hover .calc-button {
+      transform: translateX(4px);
+      box-shadow: 0 6px 20px var(--card-glow);
+    }
+    
+    .calc-button .arrow {
+      transition: transform 0.3s ease;
+    }
+    
+    .calc-card:hover .calc-button .arrow {
+      transform: translateX(4px);
+    }
+    
+    /* BADGE */
+    .calc-badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--card-accent);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+    }
+    
+    .calc-card:hover .calc-badge {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* KONTAKT */
+    .contact-section {
+      text-align: center;
+      padding: 40px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      margin-bottom: 32px;
+      animation: fadeInUp 0.6s ease 0.3s both;
+    }
+    
+    .contact-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    
+    .contact-text {
+      font-size: 16px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    
+    .contact-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .contact-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    
+    .contact-btn-primary {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: white;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .contact-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+    }
+    
+    .contact-btn-secondary {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text);
+    }
+    
+    .contact-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--accent-blue);
+    }
+    
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--muted);
+      font-size: 14px;
+      animation: fadeIn 0.6s ease 0.6s both;
+    }
+    
+    /* ANIMACJE */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .calc-card {
+      animation: fadeInUp 0.6s ease backwards;
+    }
+    
+    .calc-card:nth-child(1) { animation-delay: 0.1s; }
+    .calc-card:nth-child(2) { animation-delay: 0.2s; }
+    .calc-card:nth-child(3) { animation-delay: 0.3s; }
+    .calc-card:nth-child(4) { animation-delay: 0.4s; }
+    
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .calculator-panel {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .calc-icon-wrapper {
+        width: 100px;
+        height: 100px;
+      }
+      
+      .calc-icon {
+        font-size: 52px;
+      }
+      
+      .contact-buttons {
+        flex-direction: column;
+      }
+      
+      .contact-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- HEADER -->
+    <header class="header">
+      <div class="logo">DGFINANCES</div>
+      <h1 class="title">Panel Kalkulatorów Finansowych</h1>
+      <p class="subtitle">Wybierz kalkulator i oblicz swoje możliwości finansowe</p>
+    </header>
+
+    <!-- PANEL KALKULATORÓW -->
+    <div class="calculator-panel">
+      
+      <!-- Kalkulator Hipoteczny -->
+      <a href="kalkulator-hipoteczny/index.html" class="calc-card card-hipoteka">
+        <span class="calc-badge">Popularny</span>
+        <div class="calc-icon-wrapper">
+          <div class="calc-icon-bg"></div>
+          <div class="calc-icon">🏠</div>
+        </div>
+        <h2 class="calc-title">Kredyt Hipoteczny</h2>
+        <p class="calc-description">
+          Oblicz raty kredytu na mieszkanie lub dom z pełnym harmonogramem spłat
+        </p>
+        <ul class="calc-features">
+          <li>Raty równe i malejące</li>
+          <li>Harmonogram spłat</li>
+          <li>Wskaźnik LTV</li>
+          <li>3 bezpłatne kalkulacje</li>
+        </ul>
+        <span class="calc-button">
+          Otwórz
+          <span class="arrow">→</span>
+        </span>
+      </a>
+
+      <!-- Kalkulator Leasingu -->
+      <a href="kalkulator-leasingu/index.html" class="calc-card card-leasing">
+        <span class="calc-badge">Z formularzem</span>
+        <div class="calc-icon-wrapper">
+          <div class="calc-icon-bg"></div>
+          <div class="calc-icon">🚗</div>
+        </div>
+        <h2 class="calc-title">Leasing</h2>
+        <p class="calc-description">
+          Sprawdź wysokość rat leasingu operacyjnego lub finansowego
+        </p>
+        <ul class="calc-features">
+          <li>Leasing operacyjny</li>
+          <li>Leasing finansowy</li>
+          <li>Wartość końcowa</li>
+          <li>Formularz kontaktowy</li>
+        </ul>
+        <span class="calc-button">
+          Otwórz
+          <span class="arrow">→</span>
+        </span>
+      </a>
+
+      <!-- Kalkulator Zdolności -->
+      <a href="kalkulator-zdolnosci/index.html" class="calc-card card-zdolnosc">
+        <span class="calc-badge">Szybki</span>
+        <div class="calc-icon-wrapper">
+          <div class="calc-icon-bg"></div>
+          <div class="calc-icon">💰</div>
+        </div>
+        <h2 class="calc-title">Zdolność Kredytowa</h2>
+        <p class="calc-description">
+          Sprawdź maksymalną kwotę kredytu na podstawie Twoich dochodów
+        </p>
+        <ul class="calc-features">
+          <li>Analiza dochodów</li>
+          <li>Wskaźnik DTI</li>
+          <li>Koszty życia</li>
+          <li>Zobowiązania</li>
+        </ul>
+        <span class="calc-button">
+          Otwórz
+          <span class="arrow">→</span>
+        </span>
+      </a>
+
+      <!-- Kalkulator Kredytu Samochodowego -->
+      <a href="kalkulator-samochodowy/index.html" class="calc-card card-samochod">
+        <span class="calc-badge">Nowy</span>
+        <div class="calc-icon-wrapper">
+          <div class="calc-icon-bg"></div>
+          <div class="calc-icon">🚙</div>
+        </div>
+        <h2 class="calc-title">Kredyt Samochodowy</h2>
+        <p class="calc-description">
+          Oblicz ratę i koszty kredytu na zakup samochodu
+        </p>
+        <ul class="calc-features">
+          <li>Wpłata własna</li>
+          <li>Porównanie ofert</li>
+          <li>Całkowity koszt</li>
+          <li>Szczegółowe zestawienia</li>
+        </ul>
+        <span class="calc-button">
+          Otwórz
+          <span class="arrow">→</span>
+        </span>
+      </a>
+
+    </div>
+
+    <!-- SEKCJA KONTAKTOWA -->
+    <section class="contact-section">
+      <h2 class="contact-title">Profesjonalne doradztwo finansowe</h2>
+      <p class="contact-text">Nasze kalkulatory pomogą Ci wstępnie oszacować możliwości finansowania. Dla szczegółowej oferty skontaktuj się z naszymi doradcami.</p>
+      <div class="contact-buttons">
+        <a href="tel:+48533877454" class="contact-btn contact-btn-primary">
+          📞 Zadzwoń: 533-877-454
+        </a>
+          <a href="mailto:kontakt@dgloans.net" class="contact-btn contact-btn-secondary">
+            ✉️ kontakt@dgloans.net
+        </a>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <p>© 2025 DGFINANCES. Wszystkie obliczenia mają charakter informacyjny i nie stanowią oferty handlowej. Kalkulatory zawierają ograniczenia użytkowania i formularze kontaktowe.</p>
+    </footer>
+  </div>
+</body>
+</html>
