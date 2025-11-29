@@ -1,0 +1,33 @@
+name: Monitor GitHub Pages
+
+on:
+  schedule:
+    - cron: '0 * * * *' # every hour
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  check-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check GitHub Pages availability
+        run: |
+          set -euo pipefail
+          URL="https://daviitag25.github.io/kalkulator/"
+          echo "Checking $URL"
+          HTTP_CODE=$(curl -sS -o /tmp/page.html -w "%{http_code}" "$URL" || true)
+          echo "HTTP code: $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Pages returned HTTP $HTTP_CODE"
+            cat /tmp/page.html || true
+            exit 1
+          fi
+          # Verify expected content exists (adjust string if needed)
+          if ! grep -q "Panel Kalkulatorów Finansowych" /tmp/page.html; then
+            echo "Expected content not found in page"
+            grep -n "<title\|Panel Kalkulatorów Finansowych" /tmp/page.html || true
+            exit 1
+          fi
+          echo "Pages OK: HTTP 200 and expected content present."
