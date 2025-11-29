@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kalkulator kredytu samochodowego - oblicz ratę, całkowity koszt kredytu i porównaj oferty">
+    <title>Kalkulator Kredytu Samochodowego</title>
+    <style>
+        /* DARK THEME */
+        :root {
+            --bg: #0b1220;
+            --card: #111a2b;
+            --accent: #f97316;
+            --accent-2: #fb923c;
+            --text: #e6eef8;
+            --muted: #93a4b8;
+            --border: #223049;
+            --danger: #ef4444;
+            --success: #10b981;
+            --input-bg: #0d1626;
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, Arial, sans-serif;
+            background: radial-gradient(1200px 600px at 10% -30%, #0f172a 0%, var(--bg) 50%) fixed,
+                        radial-gradient(1000px 500px at 90% 130%, #1e293b 0%, var(--bg) 50%) fixed;
+            color: var(--text);
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding-top: 40px;
+        }
+
+        .calc-container {
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.0));
+            backdrop-filter: blur(3px);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--text);
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background: var(--input-bg);
+            color: var(--text);
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 8px rgba(249, 115, 22, 0.3);
+        }
+
+        /* SUWAK */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            margin: 10px 0;
+            width: 100%;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 2px 6px rgba(249, 115, 22, 0.4);
+        }
+        
+        /* Firefox */
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+        }
+        
+        input[type=range]::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(249, 115, 22, 0.4);
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 5px;
+        }
+
+        /* WYNIKI */
+        .result-box {
+            background: rgba(249, 115, 22, 0.05);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 30px;
+            border: 1px solid rgba(249, 115, 22, 0.2);
+        }
+
+        .result-title { 
+            font-size: 12px; 
+            color: var(--muted); 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .result-amount { 
+            font-size: 42px; 
+            font-weight: 800; 
+            color: var(--accent); 
+            margin: 10px 0;
+            text-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .detail-item {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        
+        .detail-label { 
+            color: var(--muted); 
+            display: block; 
+            margin-bottom: 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .detail-value { 
+            font-weight: bold; 
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        /* DODATKOWE STATYSTYKI */
+        .stats-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.01);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .stats-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .stat-value {
+            color: var(--text);
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        /* PRZYCISK CTA */
+        .cta-btn {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: white;
+            text-align: center;
+            padding: 16px;
+            margin-top: 25px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(249, 115, 22, 0.4);
+        }
+
+        .disclaimer { 
+            font-size: 11px; 
+            color: var(--muted); 
+            text-align: center; 
+            margin-top: 20px;
+            line-height: 1.5;
+        }
+
+        /* PORÓWNANIE OFERT */
+        .comparison-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(16, 185, 129, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .comparison-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .offer-item {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+
+        .offer-name {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        .offer-rate {
+            color: var(--success);
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* TOOLTIPS */
+        .tooltip {
+            position: relative;
+            cursor: help;
+            display: inline-block;
+            color: var(--accent);
+            margin-left: 5px;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .calc-container {
+                padding: 20px;
+            }
+            
+            .result-amount {
+                font-size: 32px;
+            }
+            
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h2 {
+                font-size: 22px;
+            }
+        }
+
+        /* PROGRESS BAR */
+        .progress-section {
+            margin-top: 20px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--input-bg);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            transition: width 0.3s ease;
+        }
+
+        /* ANIMACJE */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-box {
+            animation: fadeIn 0.4s ease;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calc-container">
+    <h2>DGFINANCES - Kalkulator Kredytu Samochodowego</h2>
+
+    <!-- Disclaimer -->
+    <div style="background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(220,38,38,0.05)); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+        <div style="width:24px; height:24px; background:#ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:14px;">!</div>
+        <div style="font-weight:600; color:#ef4444;">WAŻNE - Przeczytaj przed użyciem</div>
+      </div>
+      <div style="font-size:13px; line-height:1.5; color:#93a4b8;">
+        Ten kalkulator służy wyłącznie do <strong>wstępnych szacunków</strong>. Rzeczywiste warunki kredytu zależą od:
+        • Twojej zdolności kredytowej • Polityki banku • Aktualnych stóp procentowych • Oceny pojazdu<br>
+        <strong>Dla dokładnej analizy i najlepszej oferty umów się na bezpłatną konsultację.</strong>
+      </div>
+    </div>
+
+    <!-- Usage limit info -->
+    <div id="usageInfo" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 12px; margin-bottom: 16px; font-size: 13px;">
+      💡 Pozostało <span id="remainingUses">3</span> bezpłatnych kalkulacji
+    </div>
+
+    <div class="input-group">
+        <label>
+            Cena Zakupu Pojazdu (PLN)
+            <span class="tooltip" data-tooltip="Podaj cenę pojazdu brutto">ⓘ</span>
+        </label>
+        <input type="number" id="carPrice" value="50000" step="1000" min="0" oninput="calculateCarLoan()">
+    </div>
+
+    <div class="input-group">
+        <label>
+            Twój Wkład Własny (PLN)
+            <span class="tooltip" data-tooltip="Minimalna wpłata własna (zazwyczaj 10-20%)">ⓘ</span>
+        </label>
+        <input type="number" id="downPayment" value="10000" step="500" min="0" oninput="calculateCarLoan()">
+        
+        <div class="progress-section">
+            <div class="progress-label">
+                <span>Procent wpłaty własnej</span>
+                <span id="downPaymentPercent">20%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="downPaymentProgress" style="width: 20%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>
+            Okres Spłaty: <span id="monthsDisplay" style="color: var(--accent); font-weight: bold;">96</span> miesięcy 
+            (<span id="yearsDisplay" style="color: var(--muted);">8 lat</span>)
+        </label>
+        <input type="range" id="months" min="12" max="96" value="96" step="6" oninput="calculateCarLoan()">
+        <div class="range-labels">
+            <span>1 rok</span>
+            <span>8 lat</span>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>
+            Oprocentowanie roczne (%)
+            <span class="tooltip" data-tooltip="Średnie oprocentowanie kredytu samochodowego to 7-10%">ⓘ</span>
+        </label>
+        <input type="number" id="rate" value="8.5" step="0.1" min="0" max="30" oninput="calculateCarLoan()">
+    </div>
+
+    <div class="result-box">
+        <div class="result-title">Miesięczna Rata Kredytu</div>
+        <div class="result-amount" id="monthlyPayment">0 PLN</div>
+
+        <div class="details-grid">
+            <div class="detail-item">
+                <span class="detail-label">Kwota Kredytu</span>
+                <span class="detail-value" id="loanAmount">0 PLN</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Całkowity Koszt</span>
+                <span class="detail-value" id="totalCost">0 PLN</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Odsetki</span>
+                <span class="detail-value" id="totalInterest">0 PLN</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- DODATKOWE STATYSTYKI -->
+    <div class="stats-section">
+        <div class="stats-title">📊 Szczegółowe Informacje</div>
+        
+        <div class="stat-row">
+            <span class="stat-label">Całkowita spłata</span>
+            <span class="stat-value" id="totalRepayment">0 PLN</span>
+        </div>
+        
+        <div class="stat-row">
+            <span class="stat-label">Średni miesięczny koszt odsetek</span>
+            <span class="stat-value" id="avgMonthlyInterest">0 PLN</span>
+        </div>
+        
+        <div class="stat-row">
+            <span class="stat-label">Procent odsetek w całkowitym koszcie</span>
+            <span class="stat-value" id="interestPercent">0%</span>
+        </div>
+        
+        <div class="stat-row">
+            <span class="stat-label">Efektywna cena pojazdu</span>
+            <span class="stat-value" id="effectivePrice">0 PLN</span>
+        </div>
+    </div>
+
+    <!-- PORÓWNANIE OFERT -->
+    <div class="comparison-section">
+        <div class="comparison-title">💡 Porównaj z innymi ofertami</div>
+        
+        <div class="offer-item" onclick="setRate(7.5)">
+            <span class="offer-name">Najlepsza oferta rynkowa</span>
+            <span class="offer-rate">7.5%</span>
+        </div>
+        
+        <div class="offer-item" onclick="setRate(8.5)">
+            <span class="offer-name">Średnia rynkowa</span>
+            <span class="offer-rate">8.5%</span>
+        </div>
+        
+        <div class="offer-item" onclick="setRate(10.0)">
+            <span class="offer-name">Oferta standardowa</span>
+            <span class="offer-rate">10.0%</span>
+        </div>
+    </div>
+
+    <a href="tel:+48533877454" class="cta-btn">
+        📞 Zadzwoń: 533-877-454
+    </a>
+
+    <button class="cta-btn" style="margin-top: 10px; background: linear-gradient(135deg, var(--success), rgba(16, 185, 129, 0.8));" onclick="alert('Zadzwoń pod numer 533-877-454, aby otrzymać szczegółową ofertę dopasowaną do Twoich potrzeb!')">
+        📝 Wypełnij Formularz Kontaktowy
+    </button>
+
+    <div class="disclaimer">
+        *Kalkulacja ma charakter poglądowy i nie stanowi oferty handlowej.<br>
+        Oprocentowanie jest szacunkowe i może się różnić w zależności od banku i zdolności kredytowej.<br>
+        <strong>Skontaktuj się z nami, aby otrzymać spersonalizowaną ofertę kredytu samochodowego.</strong>
+    </div>
+</div>
+
+<!-- Sekcja kontaktowa -->
+<div id="contactSection" class="calc-container" style="display:none; margin-top:20px;">
+    <h3 style="text-align:center; color:#60a5fa; margin-bottom:20px;">📞 Skontaktuj się z ekspertem</h3>
+    
+    <form onsubmit="submitContactForm(); return false;">
+        <div class="input-group">
+            <label for="clientName">Imię i nazwisko *</label>
+            <input type="text" id="clientName" required placeholder="Wpisz swoje imię i nazwisko">
+        </div>
+        
+        <div class="input-group">
+            <label for="clientPhone">Telefon *</label>
+            <input type="tel" id="clientPhone" required placeholder="+48 600 000 000">
+        </div>
+        
+        <div class="input-group">
+            <label for="clientEmail">Email</label>
+            <input type="email" id="clientEmail" placeholder="kontakt@dgloans.net">
+            <div id="emailError" class="error" style="display:none;"></div>
+        </div>
+        
+        <button type="submit" style="width:100%; background:#60a5fa; color:white; border:none; padding:12px; border-radius:8px; font-weight:600; cursor:pointer; margin-top:10px;">
+            📧 Wyślij zapytanie
+        </button>
+    </form>
+</div>
+
+<script>
+            // Walidacja e-mail
+            function isValidEmail(email) {
+                return /^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(email);
+            }
+
+            // Walidacja na blur
+            document.getElementById('clientEmail').addEventListener('blur', function() {
+                const email = this.value.trim();
+                const errorDiv = document.getElementById('emailError');
+                if (!isValidEmail(email)) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = 'Podaj poprawny adres e-mail.';
+                        console.error('Błąd walidacji: niepoprawny email:', email);
+                } else {
+                    errorDiv.style.display = 'none';
+                }
+            });
+    // JEDEN WEBHOOK DLA WSZYSTKICH KALKULATORÓW - AKTYWNY URL!
+    const KALKULATORY_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx3eZrmbp3YT6Aqc1cn9E0aChQpX9MIt_5cayoYp6FZmvQGwNF6FH1GKKieNk1uIwswxQ/exec';
+
+    // Calculation limits
+    // Validation and formatting functions for phone
+    function isValidPhone(v) {
+      if (!v) return false;
+      const trimmed = v.trim();
+      // If starts with +, validate E.164-ish: + followed by 2..15 digits
+      if (trimmed.startsWith('+')) {
+        return /^\+[1-9][0-9]{1,14}$/.test(trimmed.replace(/[^0-9\+]/g, ''));
+      }
+      // Otherwise accept local-ish numbers with 6-15 digits
+      const digits = trimmed.replace(/[^0-9]/g, '');
+      return digits.length >= 6 && digits.length <= 15;
+    }
+
+    function phoneMaskFormat(raw) {
+      if (!raw) return '';
+      const hasPlus = raw.trim().startsWith('+');
+      let digits = raw.replace(/\D/g, '');
+      // If user entered + and then digits, keep +
+      if (hasPlus && digits.length > 0) {
+        // Try to detect country code (1-3 digits) - for simplicity assume 2 for PL
+        if (digits.startsWith('48')) {
+          const cc = '48';
+          const rest = digits.slice(2);
+          const groups = [];
+          if (rest.length > 0) groups.push(rest.slice(0,3));
+          if (rest.length > 3) groups.push(rest.slice(3,6));
+          if (rest.length > 6) groups.push(rest.slice(6,9));
+          return '+' + cc + (groups.length ? ' ' + groups.join(' ') : '');
+        }
+        // Generic grouping in 3s
+        const parts = [];
+        for (let i = 0; i < digits.length; i += 3) parts.push(digits.slice(i, i+3));
+        return '+' + parts.join(' ');
+      }
+      // No plus: format local groups (for PL aim for 3-3-3)
+      if (digits.startsWith('48')) digits = digits.slice(2);
+      const out = [];
+      if (digits.length <= 3) return digits;
+      out.push(digits.slice(0,3));
+      if (digits.length > 3) out.push(digits.slice(3,6));
+      if (digits.length > 6) out.push(digits.slice(6,9));
+      return out.join(' ');
+    }
+
+    let calculationCount = parseInt(localStorage.getItem('carLoanCalcCount') || '0');
+    const MAX_FREE_CALCULATIONS = 3;
+
+    function checkUsageLimit() {
+        document.getElementById('remainingUses').textContent = Math.max(0, MAX_FREE_CALCULATIONS - calculationCount);
+        
+        if (calculationCount >= MAX_FREE_CALCULATIONS) {
+            showUsageLimitReached();
+            return false;
+        }
+        return true;
+    }
+
+    function showUsageLimitReached() {
+        document.getElementById('usageInfo').innerHTML = `
+            <div style="background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05)); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 16px; text-align: center;">
+                <div style="font-weight:600; margin-bottom:8px; color: #ef4444;">🔒 Osiągnięto limit bezpłatnych kalkulacji (${MAX_FREE_CALCULATIONS})</div>
+                <div style="font-size:13px; color:#93a4b8; margin-bottom:12px;">Aby kontynuować korzystanie, skontaktuj się z nami.</div>
+                <button onclick="showContactForm()" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;">📞 Odblokuj pełny dostęp</button>
+            </div>
+        `;
+    }
+
+    function showContactForm() {
+        document.getElementById('contactSection').style.display = 'block';
+        document.getElementById('clientName').focus();
+    }
+
+    function hideContactForm() {
+        document.getElementById('contactSection').style.display = 'none';
+    }
+
+    function submitContactForm() {
+        const name = document.getElementById('clientName').value.trim();
+        const phone = document.getElementById('clientPhone').value.trim();
+        const email = document.getElementById('clientEmail').value.trim();
+
+        if (!name || !phone) {
+            alert('Wypełnij wymagane pola: Imię i telefon');
+                console.error('Błąd walidacji: brak imienia lub telefonu', {name, phone});
+            return;
+        }
+
+        if (!isValidPhone(phone)) {
+            alert('Podaj prawidłowy numer telefonu');
+                console.error('Błąd walidacji: niepoprawny numer telefonu', phone);
+            return;
+        }
+
+        // Pobierz aktualne dane kalkulacji
+        const currentCalc = {
+            carPrice: parseFloat(document.getElementById('carPrice').value) || 0,
+            downPayment: parseFloat(document.getElementById('downPayment').value) || 0,
+            months: parseInt(document.getElementById('months').value) || 0,
+            interestRate: parseFloat(document.getElementById('rate').value) || 0,
+            monthlyPayment: document.getElementById('monthlyPayment').textContent,
+            totalCost: document.getElementById('totalCost').textContent,
+            loanAmount: (parseFloat(document.getElementById('carPrice').value) || 0) - (parseFloat(document.getElementById('downPayment').value) || 0)
+        };
+
+        // Przygotuj dane do wysłania
+        const leadData = {
+            calculatorType: 'car_loan',
+            contact: {
+                name: name,
+                phone: phone,
+                email: email
+            },
+            calculation: currentCalc,
+            timestamp: new Date().toISOString()
+        };
+
+            console.log('Wysyłanie formularza kontaktowego:', leadData);
+        // Wyślij do Google Apps Script
+        sendToGoogleSheets(leadData, name, phone);
+    }
+
+    async function sendToGoogleSheets(leadData, name, phone) {
+        const contactSection = document.getElementById('contactSection');
+        
+        try {
+            contactSection.innerHTML = `
+                <div style="text-align:center; padding:20px;">
+                    <div style="font-size:24px; margin-bottom:16px;">🔄</div>
+                    <div style="font-size:16px; color:#60a5fa;">Wysyłanie...</div>
+                </div>
+            `;
+
+            await fetch(KALKULATORY_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(leadData),
+                mode: 'no-cors'
+            });
+
+            showSuccessMessage(name, phone);
+            
+        } catch (error) {
+            console.error('Błąd wysyłania:', error);
+            showSuccessMessage(name, phone);
+        }
+    }
+
+    function showSuccessMessage(name, phone) {
+        // Reset calculation limit for contacted users
+        localStorage.setItem('carLoanCalcCount', '0');
+        calculationCount = 0;
+        
+        const contactSection = document.getElementById('contactSection');
+        contactSection.innerHTML = `
+            <div style="text-align:center; padding:20px;">
+                <div style="font-size:48px; margin-bottom:16px;">✅</div>
+                <div style="font-size:18px; font-weight:600; margin-bottom:8px; color:#60a5fa;">Dziękujemy ${name}!</div>
+                <div style="font-size:14px; color:#93a4b8;">Skontaktujemy się w ciągu 24h pod numerem ${phone}</div>
+            </div>
+        `;
+        
+        // Refresh usage info
+        checkUsageLimit();
+    }
+
+    function calculateCarLoan() {
+        // Check calculation limit
+        if (!checkUsageLimit()) {
+            return;
+        }
+        try {
+            // 1. POBIERANIE I WALIDACJA DANYCH
+            let carPrice = Math.max(0, parseFloat(document.getElementById('carPrice').value) || 0);
+            let downPayment = Math.max(0, parseFloat(document.getElementById('downPayment').value) || 0);
+            let months = parseInt(document.getElementById('months').value);
+            let rateYearly = Math.max(0, parseFloat(document.getElementById('rate').value) || 0);
+
+            // Ograniczenie wpłaty własnej do ceny pojazdu
+            if (downPayment > carPrice) {
+                downPayment = carPrice;
+                document.getElementById('downPayment').value = downPayment;
+            }
+
+            // Aktualizacja wyświetlania suwaka
+            document.getElementById('monthsDisplay').innerText = months;
+            document.getElementById('yearsDisplay').innerText = Math.round(months / 12 * 10) / 10 + ' lat';
+
+            // Procent wpłaty własnej
+            const downPaymentPercent = carPrice > 0 ? (downPayment / carPrice * 100) : 0;
+            document.getElementById('downPaymentPercent').innerText = Math.round(downPaymentPercent) + '%';
+            document.getElementById('downPaymentProgress').style.width = Math.min(100, downPaymentPercent) + '%';
+
+            // 2. OBLICZENIE KWOTY KREDYTU
+            let loanAmount = carPrice - downPayment;
+            if (loanAmount < 0) loanAmount = 0;
+            
+            let monthlyRate = (rateYearly / 100) / 12;
+            let monthlyPayment = 0;
+            
+            // 3. OBLICZENIE RATY (WZÓR ANNUITETOWY)
+            if (loanAmount === 0) {
+                monthlyPayment = 0;
+            } else if (rateYearly === 0 || monthlyRate === 0) {
+                // Kredyt 0% - prosta rata
+                monthlyPayment = loanAmount / months;
+            } else {
+                // Wzór PMT (rata annuitetowa)
+                let q = 1 + monthlyRate;
+                let q_n = Math.pow(q, months);
+                monthlyPayment = loanAmount * monthlyRate * q_n / (q_n - 1);
+            }
+
+            // 4. OBLICZENIE DODATKOWYCH STATYSTYK
+            let totalRepayment = monthlyPayment * months;
+            let totalInterest = totalRepayment - loanAmount;
+            let totalCost = downPayment + totalRepayment;
+            let avgMonthlyInterest = months > 0 ? totalInterest / months : 0;
+            let interestPercent = totalRepayment > 0 ? (totalInterest / totalRepayment * 100) : 0;
+
+            // 5. FORMATOWANIE I WYŚWIETLANIE
+            const fmt = new Intl.NumberFormat('pl-PL', { 
+                style: 'decimal',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+
+            document.getElementById('monthlyPayment').innerText = fmt.format(monthlyPayment) + ' PLN';
+            document.getElementById('loanAmount').innerText = fmt.format(loanAmount) + ' PLN';
+            document.getElementById('totalInterest').innerText = fmt.format(Math.max(0, totalInterest)) + ' PLN';
+            document.getElementById('totalCost').innerText = fmt.format(totalCost) + ' PLN';
+            
+            // Dodatkowe statystyki
+            document.getElementById('totalRepayment').innerText = fmt.format(totalRepayment) + ' PLN';
+            document.getElementById('avgMonthlyInterest').innerText = fmt.format(avgMonthlyInterest) + ' PLN';
+            document.getElementById('interestPercent').innerText = Math.round(interestPercent) + '%';
+            document.getElementById('effectivePrice').innerText = fmt.format(totalCost) + ' PLN';
+
+            // 6. KOLOROWANIE WYNIKÓW (zielony dla niskich odsetek, czerwony dla wysokich)
+            const interestEl = document.getElementById('totalInterest');
+            if (interestPercent < 20) {
+                interestEl.style.color = 'var(--success)';
+            } else if (interestPercent > 40) {
+                interestEl.style.color = 'var(--danger)';
+            } else {
+                interestEl.style.color = 'var(--text)';
+            }
+
+            // 7. LOGOWANIE DLA DEBUGOWANIA
+            console.log({
+                carPrice: carPrice,
+                downPayment: downPayment,
+                downPaymentPercent: downPaymentPercent.toFixed(2) + '%',
+                loanAmount: loanAmount,
+                months: months,
+                rateYearly: rateYearly + '%',
+                monthlyRate: (monthlyRate * 100).toFixed(4) + '%',
+                monthlyPayment: monthlyPayment.toFixed(2),
+                totalInterest: totalInterest.toFixed(2),
+                totalCost: totalCost.toFixed(2)
+            });
+
+        } catch (error) {
+            console.error('Błąd w obliczeniach:', error);
+            document.getElementById('monthlyPayment').innerText = 'Błąd';
+        }
+
+        // Increment calculation count
+        calculationCount++;
+        try {
+            localStorage.setItem('carLoanCalcCount', calculationCount.toString());
+        } catch (e) {}
+        
+        // Update usage info
+        checkUsageLimit();
+    }
+
+    // Funkcja do ustawiania oprocentowania z porównania
+    function setRate(rate) {
+        document.getElementById('rate').value = rate;
+        calculateCarLoan();
+    }
+
+    // Initialize usage check on load
+    checkUsageLimit();
+    
+    // Uruchom na starcie
+    document.addEventListener('DOMContentLoaded', function() {
+        calculateCarLoan();
+    });
+</script>
+
+</body>
+</html>

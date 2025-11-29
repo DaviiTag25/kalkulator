@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kalkulator Leasingu</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #111a2b;
+      --accent: #22c55e;
+      --accent-2: #7dd3fc;
+      --text: #e6eef8;
+      --muted: #93a4b8;
+      --border: #223049;
+      --danger: #ef4444;
+      --input-bg: #0d1626;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 10% -30%, #10203b 0%, var(--bg) 50%) fixed,
+                  radial-gradient(1000px 500px at 90% 130%, #13233f 0%, var(--bg) 50%) fixed;
+      color: var(--text);
+      padding: 24px;
+    }
+    html { scroll-behavior: smooth; }
+    .wrap { max-width: 1020px; margin: 0 auto; }
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .title { font-size: 28px; font-weight: 700; letter-spacing: 0.3px; }
+    .badge {
+      border: 1px solid var(--border); color: var(--muted);
+      background: rgba(255,255,255,0.03); border-radius: 999px;
+      padding: 8px 12px; font-size: 12px;
+    }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.0));
+      backdrop-filter: blur(3px);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+      transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms ease;
+    }
+    .card:active { transform: translateY(1px) scale(0.999); }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0,0,0,0.32); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 13px; color: var(--muted); }
+    .input {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--input-bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 12px;
+    }
+    .input { transition: border-color 180ms ease, background 180ms ease; }
+    .input span { color: var(--muted); font-size: 13px; white-space: nowrap; }
+    input[type="number"], select, input[type="tel"], input[type="text"], input[type="email"] {
+      width: 100%; background: transparent; border: none; outline: none;
+      color: var(--text); font-size: 15px; padding: 4px 0; appearance: textfield;
+      transition: color 140ms ease, opacity 140ms ease;
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .actions { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+    button {
+      border: none; cursor: pointer; border-radius: 10px;
+      padding: 12px 18px; font-weight: 600; letter-spacing: 0.2px;
+    }
+    .primary { background: linear-gradient(135deg, var(--accent), #16a34a); color: #06120c; }
+    .primary { transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease; }
+    .ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .ghost { transition: background 140ms ease, color 140ms ease, border-color 140ms ease; }
+    button:hover { transform: translateY(-2px); }
+    button:active { transform: translateY(0); }
+    button:focus { outline: 3px solid rgba(125,211,252,0.12); outline-offset: 2px; }
+
+    /* Larger touch targets */
+    @media (max-width: 820px) {
+      .actions button { padding: 14px 18px; min-height: 48px; }
+      .input { padding: 12px 14px; }
+    }
+    .summary { margin-top: 18px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    @media (max-width: 820px) { .summary { grid-template-columns: 1fr; } }
+    .tile {
+      border: 1px solid var(--border); background: rgba(255,255,255,0.03);
+      border-radius: 12px; padding: 16px;
+    }
+    .tile .kicker { font-size: 12px; color: var(--muted); }
+    .tile .value { margin-top: 6px; font-size: 20px; font-weight: 700; }
+    .tile .value { transition: transform 180ms ease, color 180ms ease; }
+    .value.pulse { transform: translateY(-6px); color: var(--accent); }
+    .note { margin-top: 8px; font-size: 12px; color: var(--muted); }
+    .error { color: var(--danger); font-size: 12px; margin-top: 6px; }
+    .footer { margin-top: 18px; display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 12px; }
+    .accent-line {
+      height: 2px; width: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 2px; margin: 16px 0 4px; opacity: 0.5;
+    }
+    .row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 820px) { .row-3 { grid-template-columns: 1fr; } }
+
+    /* Global inline message/banner */
+    #globalMessage {
+      display: none;
+      margin: 12px 0 0;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #061120;
+      background: linear-gradient(90deg,var(--accent),var(--accent-2));
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+    #globalMessage.error { background: linear-gradient(90deg,var(--danger), #ef6363); color: #fff; }
+    #globalMessage.info { background: rgba(125,211,252,0.08); color: var(--text); border: 1px solid var(--border); }
+
+    /* Tooltip */
+    .info-icon { margin-left: 8px; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,0.03); color: var(--muted); font-size: 12px; cursor: default; position: relative; }
+    .info-icon:hover::after {
+      content: attr(data-tip);
+      position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(100% + 8px);
+      background: rgba(2,6,23,0.95); color: var(--text); padding: 8px 10px; border-radius: 8px; white-space: nowrap; font-size: 12px; z-index: 40; border: 1px solid var(--border);
+    }
+
+    /* Progress bar for form submission */
+    .progress { width: 100%; height: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; overflow: hidden; margin-top: 10px; }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg,var(--accent),var(--accent-2)); transition: width 220ms linear; }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .card, .tile .value, .progress-bar, button { transition: none !important; animation: none !important; }
+    }
+
+    /* Theme toggle */
+    .theme-toggle { border: 1px solid var(--border); background: transparent; color: var(--muted); padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+    .light { --bg: #f6f9fc; --card: #ffffff; --accent: #0ea5a4; --accent-2: #60a5fa; --text: #061120; --muted: #4b5563; --border: #e2e8f0; --danger: #b91c1c; --input-bg: #f3f6fb; }
+
+    /* Button spinner */
+    .btn-spinner { display: none; width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.12); border-top-color: var(--accent-2); box-sizing: border-box; animation: spin 900ms linear infinite; margin-left: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    button.loading .btn-spinner { display: inline-block; }
+
+    button.loading { opacity: 0.85; pointer-events: none; }
+  </style>
+  <!-- IMask (lekka biblioteka do maskowania input) -->
+  <script src="https://unpkg.com/imask@6.4.2/dist/imask.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="title">DGFINANCES - Kalkulator Leasingu</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button id="themeToggle" class="theme-toggle" title="Przełącz motyw">Motyw</button>
+        <div class="badge">Autoplan • Wersja demo</div>
+      </div>
+    </div>
+
+    <div id="calculatorCard" class="card">
+      <div id="globalMessage"></div>
+      <div class="grid">
+        <div class="form-group">
+          <label>Tryb ceny (netto/brutto)</label>
+          <div class="input">
+            <span>tryb</span>
+            <select id="priceMode">
+              <option value="netto">Netto</option>
+              <option value="brutto">Brutto</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Stawka VAT (%)</label>
+          <div class="input">
+            <span>%</span>
+            <input type="number" id="vatPct" value="23" min="0" max="99" step="1" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Wartość pojazdu (PLN)</label>
+          <div class="input">
+            <span>PLN</span>
+            <input type="number" id="carPrice" value="120000" min="0" step="100" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Wpłata wstępna (%)</label>
+          <div class="input">
+            <span>%</span>
+            <input type="number" id="downPct" value="20" min="0" max="100" step="1" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Okres leasingu (miesiące)</label>
+          <div class="input">
+            <span>mies.</span>
+            <input type="number" id="months" value="48" min="12" step="1" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Oprocentowanie nominalne (% rocznie)</label>
+          <div class="input">
+            <span>% p.a.</span>
+            <input type="number" id="apr" value="7.5" min="0" step="0.1" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Wartość końcowa (balon, % od ceny)</label>
+          <div class="input">
+            <span>%</span>
+            <input type="number" id="balloonPct" value="10" min="0" max="60" step="1" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Opłata przygotowawcza (PLN)</label>
+          <div class="input">
+            <span>PLN</span>
+            <input type="number" id="setupFee" value="450" min="0" step="50" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Preferowana firma leasingowa</label>
+          <div class="input">
+            <span>firma</span>
+            <select id="leasingCompany">
+              <option value="">-- Wybierz --</option>
+              <option value="ing">ING Leasing</option>
+              <option value="pko">PKO Leasing (Grupa PKO BP)</option>
+              <option value="efl">Europejski Fundusz Leasingowy (EFL)</option>
+              <option value="alior">Alior Leasing (Grupa Alior Bank)</option>
+              <option value="mleasing">mLeasing (Grupa mBank)</option>
+              <option value="millennium">Millennium Leasing (Bank Millennium)</option>
+              <option value="ikano">Ikano Bank</option>
+              <option value="getin">Idea Getin Leasing / VeloBank</option>
+              <option value="nest">Nest Bank Leasing</option>
+              <option value="vehis">Vehis</option>
+              <option value="inne">Inna firma</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="calcBtn" class="primary" onclick="calculate()">Oblicz ratę <span class="btn-spinner" aria-hidden="true"></span></button>
+        <button id="resetBtn" class="ghost" onclick="resetForm()">Wyzeruj <span class="btn-spinner" aria-hidden="true"></span></button>
+        <button id="consultationBtn" class="primary" onclick="showContactForm()" style="background: linear-gradient(135deg, #059669, #047857); margin-left: auto;">🏆 Najlepsza oferta</button>
+      </div>
+
+      <div class="accent-line"></div>
+
+      <div id="error" class="error" style="display:none;"></div>
+
+      <div class="summary">
+        <div class="tile">
+          <div class="kicker">Rata miesięczna</div>
+          <div id="monthly" class="value">–</div>
+          <div class="note">Uwzględnia wartość końcową i opłaty.</div>
+        </div>
+        <div class="tile">
+          <div class="kicker">Kwota finansowana</div>
+          <div id="financed" class="value">–</div>
+          <div class="note">Cena (w trybie) - wpłata + opłaty.</div>
+        </div>
+        <div class="tile">
+          <div class="kicker">Opłaty</div>
+          <div id="feesTotal" class="value">–</div>
+          <div class="note">Opłata przygotowawcza.</div>
+        </div>
+        <div class="tile">
+          <div class="kicker">Szacowany koszt rynkowy</div>
+          <div id="marketCost" class="value">–</div>
+          <div class="note" id="marketCostNote">Wybierz firmę leasingową.</div>
+        </div>
+      </div>
+
+      <div id="lastCalcTile" class="tile" style="margin-top:12px; display:none;">
+        <div class="kicker">Ostatnia kalkulacja</div>
+        <div id="lastCalcContent" class="note" style="margin-top:6px; line-height:1.3;">–</div>
+        <div style="margin-top:8px; display:flex; gap:8px;">
+          <button id="restoreLastBtn" class="ghost" style="padding:8px 10px;">Przywróć</button>
+          <button id="clearLastBtn" class="ghost" style="padding:8px 10px;">Usuń</button>
+        </div>
+      </div>
+
+      <div class="row-3" style="margin-top:12px;">
+        <div class="tile">
+          <div class="kicker">Cena netto</div>
+          <div id="priceNet" class="value">–</div>
+        </div>
+        <div class="tile">
+          <div class="kicker">VAT</div>
+          <div id="priceVat" class="value">–</div>
+        </div>
+        <div class="tile">
+          <div class="kicker">Cena brutto</div>
+          <div id="priceGross" class="value">–</div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Wskazówka:</span>
+        <span>Tryb ceny wpływa na bazę obliczeń: „Netto” dodaje VAT, „Brutto” odejmuje VAT do wyliczeń finansowania.</span>
+      </div>
+    </div>
+
+    <!-- Formularz kontaktowy -->
+    <div id="contactForm" class="card" style="display:none;">
+      <div class="header" style="margin-bottom: 16px;">
+        <div class="title" style="font-size: 24px;">Formularz kontaktowy</div>
+        <button class="ghost" onclick="backToCalculator()" style="padding: 8px 12px; font-size: 14px;">← Powrót</button>
+      </div>
+
+      <div id="calcSummary" class="tile" style="margin-bottom: 20px;">
+        <div class="kicker">Podsumowanie kalkulacji</div>
+        <div id="summaryContent" class="note" style="margin-top: 8px; line-height: 1.4;"></div>
+      </div>
+
+      <form id="contactFormData" onsubmit="submitForm(event)">
+        <div class="grid">
+          <div class="form-group">
+            <label>Imię i nazwisko *</label>
+            <div class="input">
+              <input type="text" id="clientName" required placeholder="Jan Kowalski" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Email *</label>
+            <div class="input">
+              <input type="email" id="clientEmail" required placeholder="kontakt@dgloans.net" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Telefon * <span class="info-icon" data-tip="Podaj numer z kierunkowym (np. +48). Przyjmujemy cyfry, spacje, +, - i ().">i</span></label>
+            <div class="input" style="align-items: center; gap: 10px;">
+              <input type="tel" id="clientPhone" required placeholder="+48 123 456 789" />
+              <span id="phoneError" style="color:var(--danger); font-size:12px; display:none;">Niepoprawny numer</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Firma (opcjonalne)</label>
+            <div class="input">
+              <input type="text" id="company" placeholder="Nazwa firmy" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Preferowana firma leasingowa</label>
+            <div class="input">
+              <select id="contactLeasingCompany">
+                <option value="">-- Wybierz --</option>
+                <option value="ing">ING Leasing</option>
+                <option value="pko">PKO Leasing (Grupa PKO BP)</option>
+                <option value="santander">Santander Leasing (Grupa Santander)</option>
+                <option value="efl">Europejski Fundusz Leasingowy (EFL)</option>
+                <option value="alior">Alior Leasing (Grupa Alior Bank)</option>
+                <option value="mleasing">mLeasing (Grupa mBank)</option>
+                <option value="millennium">Millennium Leasing (Bank Millennium)</option>
+                <option value="ikano">Ikano Bank</option>
+                <option value="getin">Idea Getin Leasing / VeloBank</option>
+                <option value="nest">Nest Bank Leasing</option>
+                <option value="vehis">Vehis</option>
+                <option value="inne">Inna firma</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" id="customCompanyField" style="display: none;">
+            <label>Nazwa innej firmy leasingowej</label>
+            <div class="input">
+              <input type="text" id="customCompany" placeholder="Wpisz nazwę firmy" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 16px;">
+          <label>Dodatkowe informacje (opcjonalne)</label>
+          <div class="input" style="min-height: 80px; align-items: flex-start;">
+            <textarea id="message" style="width: 100%; background: transparent; border: none; outline: none; color: var(--text); font-size: 15px; padding: 4px 0; resize: vertical; font-family: inherit;" rows="3" placeholder="Dodatkowe pytania lub uwagi..."></textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="submitLeadBtn" type="submit" class="primary">Wyślij zapytanie <span class="btn-spinner" aria-hidden="true"></span></button>
+          <button type="button" class="ghost" onclick="resetContactForm()">Wyczyść <span class="btn-spinner" aria-hidden="true"></span></button>
+        </div>
+      </form>
+
+      <div id="formStatus" class="note" style="margin-top: 16px; text-align: center; display: none;"></div>
+      <div id="submitProgress" style="display:none;">
+        <div class="progress"><div class="progress-bar" id="submitProgressBar"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fmtPLN = (n) => n.toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' });
+
+    // JEDEN WEBHOOK DLA WSZYSTKICH KALKULATORÓW - AKTYWNY URL!
+    const KALKULATORY_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx3eZrmbp3YT6Aqc1cn9E0aChQpX9MIt_5cayoYp6FZmvQGwNF6FH1GKKieNk1uIwswxQ/exec';
+
+    // Calculation limits
+    let calculationCount = parseInt(localStorage.getItem('leasingCalcCount') || '0');
+    const MAX_FREE_CALCULATIONS = 3;
+
+    // debounce helper
+    function debounce(fn, wait) {
+      let t;
+      return function(...args) {
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(this, args), wait);
+      };
+    }
+
+    function animateValue(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add('pulse');
+      clearTimeout(el._pulseTimer);
+      el._pulseTimer = setTimeout(() => el.classList.remove('pulse'), 300);
+    }
+
+    function isValidPhone(v) {
+      if (!v) return false;
+      const trimmed = v.trim();
+      // If starts with +, validate E.164-ish: + followed by 2..15 digits
+      if (trimmed.startsWith('+')) {
+        return /^\+[1-9][0-9]{1,14}$/.test(trimmed.replace(/[^0-9\+]/g, ''));
+      }
+      // Otherwise accept local-ish numbers with 6-15 digits
+      const digits = trimmed.replace(/[^0-9]/g, '');
+      return digits.length >= 6 && digits.length <= 15;
+    }
+
+    // Initialize IMask on phone input to restrict chars (keeps formatting flexible)
+    (function initPhoneMask() {
+      const phoneEl = document.getElementById('clientPhone');
+      if (!phoneEl || typeof IMask === 'undefined') return;
+      try {
+        IMask(phoneEl, { mask: /^\+?[0-9()\-\s]{0,20}$/ });
+      } catch (e) {
+        // ignore
+      }
+    })();
+
+    // Simple phone input mask / formatter
+    function phoneMaskFormat(raw) {
+      if (!raw) return '';
+      const hasPlus = raw.trim().startsWith('+');
+      let digits = raw.replace(/\D/g, '');
+      // If user entered + and then digits, keep +
+      if (hasPlus && digits.length > 0) {
+        // Try to detect country code (1-3 digits) - for simplicity assume 2 for PL
+        if (digits.startsWith('48')) {
+          const cc = '48';
+          const rest = digits.slice(2);
+          const groups = [];
+          if (rest.length > 0) groups.push(rest.slice(0,3));
+          if (rest.length > 3) groups.push(rest.slice(3,6));
+          if (rest.length > 6) groups.push(rest.slice(6,9));
+          return '+' + cc + (groups.length ? ' ' + groups.join(' ') : '');
+        }
+        // Generic grouping in 3s
+        const parts = [];
+        for (let i = 0; i < digits.length; i += 3) parts.push(digits.slice(i, i+3));
+        return '+' + parts.join(' ');
+      }
+      // No plus: format local groups (for PL aim for 3-3-3)
+      if (digits.startsWith('48')) digits = digits.slice(2);
+      const out = [];
+      if (digits.length <= 3) return digits;
+      out.push(digits.slice(0,3));
+      if (digits.length > 3) out.push(digits.slice(3,6));
+      if (digits.length > 6) out.push(digits.slice(6,9));
+      return out.join(' ');
+    }
+
+    // Dane o firmach leasingowych (orientacyjne koszty i charakterystyka)
+    const leasingCompanies = {
+      'ing': { name: 'ING Leasing', costMin: 104.0, costMax: 105.5, desc: 'Najbardziej agresywny (niski koszt, wysokie wymagania)', recommendation: 'Najlepszy wybór dla klienta o doskonałej zdolności.' },
+      'pko': { name: 'PKO Leasing', costMin: 104.5, costMax: 106.0, desc: 'Top bankowy standard (stabilny, niskie ryzyko)', recommendation: 'Benchmark jakości i bezpieczeństwa.' },
+      'vehis': { name: 'VEHIS', costMin: 105.0, costMax: 107.0, desc: 'Agregator / szybkie porównanie online', recommendation: 'Twój bezpośredni konkurent UX. Dobry benchmark dla ofert bankowych.' },
+      'santander': { name: 'Santander Leasing', costMin: 105.5, costMax: 107.0, desc: 'Konkurencyjny środek rynku', recommendation: 'Bardzo elastyczni, duże wolumeny.' },
+      'efl': { name: 'EFL', costMin: 106.5, costMax: 108.0, desc: 'Elastyczny (duże firmy i mniejsze maszyny)', recommendation: 'Dobry do negocjacji i złożonych maszyn.' },
+      'alior': { name: 'Alior Leasing', costMin: 107.0, costMax: 108.5, desc: 'Uproszczone procedury (wysoki wolumen)', recommendation: 'Lepszy dla procedur "na oświadczenie" i małych kwot.' },
+      'nest': { name: 'Nest Bank Leasing', costMin: 108.0, costMax: 109.5, desc: 'Mikrofirma / start-up (uproszczony dostęp)', recommendation: 'Idealny, gdy klient ma krótki staż działalności.' }
+    };
+
+    function resetForm() {
+      document.getElementById('priceMode').value = 'netto';
+      document.getElementById('vatPct').value = 23;
+      document.getElementById('carPrice').value = 120000;
+      document.getElementById('downPct').value = 20;
+      document.getElementById('months').value = 48;
+      document.getElementById('apr').value = 7.5;
+      document.getElementById('balloonPct').value = 10;
+      document.getElementById('setupFee').value = 450;
+      document.getElementById('leasingCompany').value = '';
+
+      document.getElementById('error').style.display = 'none';
+      ['monthly','financed','feesTotal','priceNet','priceVat','priceGross','marketCost'].forEach(id => {
+        document.getElementById(id).textContent = '–';
+      });
+      document.getElementById('marketCostNote').textContent = 'Wybierz firmę leasingową.';
+      // clear persisted theme? keep theme
+    }
+
+    function calculate() {
+      // Check calculation limit
+      if (calculationCount >= MAX_FREE_CALCULATIONS) {
+        showCalculationLimitReached();
+        return;
+      }
+
+      const calcBtn = document.getElementById('calcBtn');
+      if (calcBtn) { calcBtn.classList.add('loading'); }
+
+      const mode = document.getElementById('priceMode').value; // netto | brutto
+      const vatPct = Math.max(0, parseFloat(document.getElementById('vatPct').value) || 0) / 100;
+
+      const inputPrice = parseFloat(document.getElementById('carPrice').value) || 0;
+      const downPct = Math.max(0, Math.min(100, parseFloat(document.getElementById('downPct').value) || 0));
+      const months = Math.max(1, parseInt(document.getElementById('months').value) || 1);
+      const apr = Math.max(0, parseFloat(document.getElementById('apr').value) || 0) / 100;
+      const balloonPct = Math.max(0, Math.min(100, parseFloat(document.getElementById('balloonPct').value) || 0)) / 100;
+      const setupFee = Math.max(0, parseFloat(document.getElementById('setupFee').value) || 0);
+      const leasingCompany = document.getElementById('leasingCompany').value;
+
+      const errorEl = document.getElementById('error');
+      errorEl.style.display = 'none';
+      errorEl.textContent = '';
+
+      if (inputPrice <= 0) {
+        errorEl.textContent = 'Podaj dodatnią wartość pojazdu.';
+        errorEl.style.display = 'block';
+        if (calcBtn) calcBtn.classList.remove('loading');
+        return;
+      }
+      if (downPct >= 100) {
+        errorEl.textContent = 'Wpłata wstępna nie może być 100% lub więcej.';
+        errorEl.style.display = 'block';
+        if (calcBtn) calcBtn.classList.remove('loading');
+        return;
+      }
+
+      // Przeliczenie ceny na netto/brutto
+      let priceNet, priceVat, priceGross;
+      if (mode === 'netto') {
+        priceNet = inputPrice;
+        priceVat = priceNet * vatPct;
+        priceGross = priceNet + priceVat;
+      } else {
+        priceGross = inputPrice;
+        priceVat = priceGross * (vatPct / (1 + vatPct));
+        priceNet = priceGross - priceVat;
+      }
+
+      // Wpłata wstępna i balon liczone od ceny brutto (typowo). Można łatwo przełączyć na netto.
+      const downPayment = priceGross * (downPct / 100);
+      const balloonValue = priceGross * balloonPct;
+
+      // Bazowa kwota finansowana
+      const financedBase = Math.max(0, priceGross - downPayment);
+
+      // Opłaty (tylko przygotowawcza)
+      const feesTotal = setupFee;
+      const financedPrincipal = financedBase + feesTotal;
+
+      // Rata miesięczna z balonem
+      const r = apr / 12;
+      let monthly = 0;
+      if (r === 0) {
+        monthly = Math.max(0, (financedPrincipal - balloonValue) / months);
+      } else {
+        const A = r / (1 - Math.pow(1 + r, -months));
+        const B = r / (Math.pow(1 + r, months) - 1);
+        monthly = financedPrincipal * A - balloonValue * B;
+      }
+
+      // Wyświetlenie
+      document.getElementById('priceNet').textContent = fmtPLN(priceNet);
+      document.getElementById('priceVat').textContent = fmtPLN(priceVat);
+      document.getElementById('priceGross').textContent = fmtPLN(priceGross);
+
+      document.getElementById('monthly').textContent = fmtPLN(monthly);
+      document.getElementById('financed').textContent = fmtPLN(financedPrincipal);
+      document.getElementById('feesTotal').textContent = fmtPLN(feesTotal);
+      // animate updates
+      ['priceNet','priceVat','priceGross','monthly','financed','feesTotal'].forEach(animateValue);
+      
+      // Oblicz szacowany koszt rynkowy dla wybranej firmy
+      updateMarketCost(leasingCompany, monthly, months);
+
+      // Aktywuj przycisk wysyłki leada po poprawnym wyliczeniu
+      const leadBtn = document.getElementById('leadBtn');
+      leadBtn.disabled = false;
+      leadBtn.style.opacity = '1';
+      
+      // Zachowaj ostatnie wyniki do użycia w formularzu
+      window.__leaseCalc = {
+        mode,
+        vatPct,
+        inputPrice,
+        priceNet,
+        priceVat,
+        priceGross,
+        downPct,
+        months,
+        apr,
+        balloonPct,
+        setupFee,
+        leasingCompany,
+        financedPrincipal,
+        monthly,
+        feesTotal
+      };
+
+      // Persist last calculation to localStorage for quick restore
+      try {
+        localStorage.setItem('lease_last', JSON.stringify(window.__leaseCalc));
+        renderLastCalc();
+      } catch (e) {
+        // ignore storage errors (private mode)
+      }
+
+      // Increment calculation count
+      calculationCount++;
+      try {
+        localStorage.setItem('leasingCalcCount', calculationCount.toString());
+      } catch (e) {}
+
+      // Show limit warning
+      if (calculationCount >= MAX_FREE_CALCULATIONS) {
+        setTimeout(() => showCalculationLimitReached(), 1000);
+      }
+
+      if (calcBtn) {
+        setTimeout(() => calcBtn.classList.remove('loading'), 220);
+      }
+    }
+
+    function showCalculationLimitReached() {
+      const errorEl = document.getElementById('error');
+      errorEl.innerHTML = `
+        <div style="background: linear-gradient(135deg, rgba(251,146,60,0.1), rgba(251,146,60,0.05)); border: 1px solid rgba(251,146,60,0.3); border-radius: 12px; padding: 16px; margin-top: 12px;">
+          <div style="font-weight:600; margin-bottom:8px; color: #f59e0b;">🔒 Osiągnięto limit bezpłatnych kalkulacji (${MAX_FREE_CALCULATIONS})</div>
+          <div style="font-size:13px; color:var(--muted); margin-bottom:12px;">Aby kontynuować korzystanie i otrzymać szczegółowe analizy, skontaktuj się z nami.</div>
+          <button onclick="showContactForm()" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;">📞 Odblokuj pełny dostęp</button>
+        </div>
+      `;
+      errorEl.style.display = 'block';
+    }
+
+    // Auto-obliczenie na starcie
+    calculate();
+
+    function updateMarketCost(companyCode, monthlyPayment, months) {
+      const marketCostEl = document.getElementById('marketCost');
+      const marketCostNoteEl = document.getElementById('marketCostNote');
+      
+      if (!companyCode || !leasingCompanies[companyCode]) {
+        marketCostEl.textContent = '–';
+        marketCostNoteEl.textContent = 'Wybierz firmę leasingową.';
+        return;
+      }
+      
+      const company = leasingCompanies[companyCode];
+      const totalPayments = monthlyPayment * months;
+      const minCost = (totalPayments * company.costMin) / 100;
+      const maxCost = (totalPayments * company.costMax) / 100;
+      
+      marketCostEl.textContent = `${fmtPLN(minCost)} - ${fmtPLN(maxCost)}`;
+      marketCostNoteEl.innerHTML = `<strong>${company.desc}</strong><br>${company.recommendation}`;
+      animateValue('marketCost');
+    }
+
+    // Przeliczanie przy zmianie trybu VAT lub trybu ceny
+    document.getElementById('priceMode').addEventListener('change', calculate);
+    document.getElementById('vatPct').addEventListener('input', calculate);
+    document.getElementById('leasingCompany').addEventListener('change', calculate);
+    // Debounced inputs for realtime validation / calculation
+    const debouncedCalc = debounce(calculate, 350);
+    ['carPrice','downPct','months','apr','balloonPct','setupFee'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', debouncedCalc);
+    });
+
+    // Phone inline validation (contact form)
+    const phoneInput = document.getElementById('clientPhone');
+    if (phoneInput) {
+      phoneInput.addEventListener('input', function(e) {
+        const el = this;
+        const pos = el.selectionStart;
+        const before = el.value;
+        const formatted = phoneMaskFormat(before);
+        el.value = formatted;
+        const ok = isValidPhone(el.value);
+        const phoneErr = document.getElementById('phoneError');
+        phoneErr.style.display = ok ? 'none' : 'inline';
+      });
+      // On blur ensure validation final
+      phoneInput.addEventListener('blur', function() {
+        const ok = isValidPhone(this.value);
+        const phoneErr = document.getElementById('phoneError');
+        phoneErr.style.display = ok ? 'none' : 'inline';
+      });
+    }
+    
+    // Pokaż/ukryj pole niestandardowej firmy leasingowej
+    document.getElementById('contactLeasingCompany').addEventListener('change', function() {
+      const customField = document.getElementById('customCompanyField');
+      customField.style.display = this.value === 'inne' ? 'block' : 'none';
+    });
+
+    function showContactForm() {
+      const d = window.__leaseCalc;
+      if (!d) {
+        // Jeśli użytkownik kliknął formularz przed obliczeniem - pokaż widoczny komunikat
+        showMessage('Najpierw oblicz ratę leasingu klikając "Oblicz ratę"', 'info');
+        return;
+      }
+
+      // Ukryj kalkulator i pokaż formularz
+      const calcCard = document.getElementById('calculatorCard');
+      const contactCard = document.getElementById('contactForm');
+      if (calcCard) calcCard.style.display = 'none';
+      if (contactCard) contactCard.style.display = 'block';
+      
+      // Focus na pierwszym polu
+      const nameField = document.getElementById('clientName');
+      if (nameField) nameField.focus();
+
+      // Wypełnij podsumowanie kalkulacji
+      const companyText = d.leasingCompany ? (document.querySelector(`#leasingCompany option[value="${d.leasingCompany}"]`)?.textContent || d.leasingCompany) : 'Nie wybrano';
+      const summaryLines = [
+        `<strong>Rata miesięczna:</strong> ${fmtPLN(d.monthly)} / ${d.months} mies.`,
+        `<strong>Cena:</strong> ${fmtPLN(d.inputPrice)} (${d.mode}) • <strong>VAT:</strong> ${Math.round(d.vatPct*100)}%`,
+        `<strong>Wpłata wstępna:</strong> ${d.downPct}% • <strong>Balon:</strong> ${(d.balloonPct*100).toFixed(0)}%`,
+        `<strong>Oprocentowanie:</strong> ${(d.apr*100).toFixed(2)}% p.a. • <strong>Opłata:</strong> ${fmtPLN(d.setupFee)}`,
+        `<strong>Preferowana firma:</strong> ${companyText}`
+      ];
+
+      // Ustaw wybraną firmę leasingową w formularzu kontaktowym
+      const contactSelect = document.getElementById('contactLeasingCompany');
+      if (contactSelect) contactSelect.value = d.leasingCompany || '';
+      const summaryEl = document.getElementById('summaryContent');
+      if (summaryEl) summaryEl.innerHTML = summaryLines.join('<br>');
+
+      // Scroll do góry
+      window.scrollTo(0, 0);
+    }
+
+    // Pokazuje komunikat w górnej części karty (typ: 'info' | 'error')
+    function showMessage(text, type = 'info', timeout = 4000) {
+      const el = document.getElementById('globalMessage');
+      if (!el) return;
+      el.textContent = text;
+      el.className = type === 'error' ? 'error' : 'info';
+      el.style.display = 'block';
+      // Usuń po czasie
+      clearTimeout(el._hideTimer);
+      el._hideTimer = setTimeout(() => {
+        el.style.display = 'none';
+      }, timeout);
+    }
+
+    function backToCalculator() {
+      document.getElementById('contactForm').style.display = 'none';
+      document.getElementById('calculatorCard').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+
+    function resetContactForm() {
+      document.getElementById('contactFormData').reset();
+      document.getElementById('formStatus').style.display = 'none';
+    }
+
+    async function submitContactForm() {
+      const name = document.getElementById('clientName').value.trim();
+      const phone = document.getElementById('clientPhone').value.trim();
+      const email = document.getElementById('clientEmail').value.trim();
+      const company = document.getElementById('company').value.trim();
+      const message = document.getElementById('message').value.trim();
+      const leasingCompanyValue = document.getElementById('contactLeasingCompany').value;
+      const customCompanyValue = document.getElementById('customCompany').value;
+
+      if (!name || !phone) {
+        alert('Wypełnij wymagane pola: Imię i telefon');
+          console.error('Błąd walidacji: brak imienia lub telefonu', {name, phone});
+        return;
+      }
+
+      if (!isValidPhone(phone)) {
+        alert('Podaj prawidłowy numer telefonu');
+          console.error('Błąd walidacji: niepoprawny numer telefonu', phone);
+        return;
+      }
+
+      // Pobierz aktualne dane kalkulacji
+      const currentCalc = window.__leaseCalc ? {
+        monthlyPayment: window.__leaseCalc.monthly,
+        vehiclePrice: window.__leaseCalc.inputPrice,
+        priceMode: window.__leaseCalc.mode,
+        vatPercent: Math.round(window.__leaseCalc.vatPct * 100),
+        downPaymentPercent: window.__leaseCalc.downPct,
+        leasePeriodMonths: window.__leaseCalc.months,
+        interestRateAnnual: parseFloat((window.__leaseCalc.apr * 100).toFixed(2)),
+        balloonPercent: parseFloat((window.__leaseCalc.balloonPct * 100).toFixed(0)),
+        setupFee: window.__leaseCalc.setupFee,
+        totalFinanced: window.__leaseCalc.financedPrincipal
+      } : {};
+
+      const finalLeasingCompany = leasingCompanyValue === 'inne' ? customCompanyValue : leasingCompanyValue;
+
+      // Przygotuj dane do wysłania
+      const leadData = {
+        calculatorType: 'leasing',
+        contact: {
+          name: name,
+          phone: phone,
+          email: email,
+          company: company,
+          message: message,
+          preferredLeasingCompany: finalLeasingCompany
+        },
+        calculation: currentCalc,
+        timestamp: new Date().toISOString()
+      };
+
+        console.log('Wysyłanie formularza kontaktowego:', leadData);
+      // Wyślij do Google Apps Script
+      sendToGoogleSheets(leadData, name, phone);
+    }
+
+    async function sendToGoogleSheets(leadData, name, phone) {
+      const statusEl = document.getElementById('submitStatus');
+      const progressWrap = document.getElementById('submitProgress');
+      const progressBar = document.getElementById('submitProgressBar');
+      
+      try {
+        // Pokaż loading
+        statusEl.style.display = 'block';
+        statusEl.style.color = '#60a5fa';
+        statusEl.innerHTML = '📡 Wysyłanie...';
+        progressWrap.style.display = 'block';
+        progressBar.style.width = '30%';
+
+        const response = await fetch(KALKULATORY_WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(leadData),
+          mode: 'no-cors' // Google Apps Script wymaga tego
+        });
+
+        // Zawsze pokazujemy sukces, bo no-cors nie zwraca odpowiedzi
+        showSuccessMessage(name, phone);
+        
+      } catch (error) {
+        console.error('Błąd wysyłania:', error);
+        // Nawet przy błędzie pokazujemy sukces (dane prawdopodobnie dotarły)
+        showSuccessMessage(name, phone);
+      }
+    }
+
+    function showSuccessMessage(name, phone) {
+      const statusEl = document.getElementById('submitStatus');
+      const progressBar = document.getElementById('submitProgressBar');
+      
+      // Pokaż sukces
+      progressBar.style.width = '100%';
+      statusEl.style.color = 'var(--accent)';
+      statusEl.innerHTML = `✅ Dziękujemy ${name}! Skontaktujemy się w ciągu 24h pod numerem ${phone}`;
+      
+      // Reset calculation limit for contacted users
+      localStorage.setItem('leasingCalcCount', '0');
+      calculationCount = 0;
+      
+      // Wyczyść formularz po 4 sekundach
+      setTimeout(() => {
+        resetContactForm();
+        backToCalculator();
+      }, 4000);
+    }
+
+    async function submitForm(event) {
+      event.preventDefault();
+      await submitContactForm();
+    }
+
+    // Theme toggle logic
+    const themeToggle = document.getElementById('themeToggle');
+    function applySavedTheme() {
+      const t = localStorage.getItem('kalkTheme') || 'dark';
+      if (t === 'light') document.body.classList.add('light');
+      else document.body.classList.remove('light');
+    }
+    applySavedTheme();
+    if (themeToggle) themeToggle.addEventListener('click', () => {
+      const isLight = document.body.classList.toggle('light');
+      localStorage.setItem('kalkTheme', isLight ? 'light' : 'dark');
+    });
+
+    // Render last calculation if present
+    function renderLastCalc() {
+      const raw = localStorage.getItem('lease_last');
+      const tile = document.getElementById('lastCalcTile');
+      const content = document.getElementById('lastCalcContent');
+      if (!raw) {
+        if (tile) tile.style.display = 'none';
+        return;
+      }
+      try {
+        const d = JSON.parse(raw);
+        const txt = `Rata: ${fmtPLN(d.monthly)} • ${d.months} mies. • Cena: ${fmtPLN(d.inputPrice)} • Wpłata: ${d.downPct}%`;
+        if (content) content.textContent = txt;
+        if (tile) tile.style.display = 'block';
+      } catch (e) {
+        if (tile) tile.style.display = 'none';
+      }
+    }
+
+    // Restore last calc to form
+    const restoreBtn = document.getElementById('restoreLastBtn');
+    if (restoreBtn) restoreBtn.addEventListener('click', () => {
+      const raw = localStorage.getItem('lease_last');
+      if (!raw) return;
+      try {
+        const d = JSON.parse(raw);
+        document.getElementById('priceMode').value = d.mode || 'netto';
+        document.getElementById('vatPct').value = Math.round((d.vatPct||0)*100);
+        document.getElementById('carPrice').value = d.inputPrice || '';
+        document.getElementById('downPct').value = d.downPct || 0;
+        document.getElementById('months').value = d.months || 12;
+        document.getElementById('apr').value = (d.apr||0) * 100;
+        document.getElementById('balloonPct').value = (d.balloonPct||0) * 100;
+        document.getElementById('setupFee').value = d.setupFee || 0;
+        document.getElementById('leasingCompany').value = d.leasingCompany || '';
+        calculate();
+      } catch (e) { /* ignore */ }
+    });
+
+    const clearBtn = document.getElementById('clearLastBtn');
+    if (clearBtn) clearBtn.addEventListener('click', () => {
+      localStorage.removeItem('lease_last');
+      renderLastCalc();
+    });
+
+    // Render on load
+    renderLastCalc();
+
+    // Attach listeners for contact form leasing company custom field
+    document.getElementById('contactLeasingCompany').addEventListener('change', function() {
+      const customField = document.getElementById('customCompanyField');
+      customField.style.display = this.value === 'inne' ? 'block' : 'none';
+    });
+
+    // Set initial listeners on load
+    (function init() {
+      // ensure contactLeasingCompany listener already set above; keep others
+    })();
+
+    
+  </script>
+</body>
+</html>

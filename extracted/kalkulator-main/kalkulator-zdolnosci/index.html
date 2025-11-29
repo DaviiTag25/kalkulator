@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Profesjonalny kalkulator zdolności kredytowej 2024. Sprawdź maksymalną kwotę kredytu na podstawie rzeczywistych kryteriów bankowych. Bezpłatne wyliczenie w 30 sekund.">
+    <meta name="keywords" content="kalkulator kredytowy, zdolność kredytowa, kredyt hipoteczny, kredyt gotówkowy, wyliczenie raty">
+    <meta name="author" content="Ekspert Kredytowy">
+    <title>Kalkulator Zdolności Kredytowej</title>
+    <style>
+        /* STYL - DARK THEME */
+        :root {
+            --bg: #0b1220;
+            --card: #111a2b;
+            --accent: #8b5cf6;
+            --accent-2: #7dd3fc;
+            --text: #e6eef8;
+            --muted: #93a4b8;
+            --border: #223049;
+            --danger: #ef4444;
+            --success: #10b981;
+            --input-bg: #0d1626;
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, Arial, sans-serif;
+            background: radial-gradient(1200px 600px at 10% -30%, #10203b 0%, var(--bg) 50%) fixed,
+                        radial-gradient(1000px 500px at 90% 130%, #13233f 0%, var(--bg) 50%) fixed;
+            color: var(--text);
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding-top: 40px;
+        }
+
+        .calc-container {
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.0));
+            backdrop-filter: blur(3px);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--text);
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background: var(--input-bg);
+            color: var(--text);
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);
+        }
+
+        /* SUWAK */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            margin: 10px 0;
+            width: 100%;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 2px 6px rgba(139, 92, 246, 0.4);
+        }
+        
+        /* Firefox */
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+        }
+        
+        input[type=range]::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(139, 92, 246, 0.4);
+        }
+
+        /* WYNIKI */
+        .result-box {
+            background: rgba(139, 92, 246, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 30px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .result-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        .result-value {
+            font-size: 40px;
+            font-weight: 800;
+            color: var(--success);
+            margin: 10px 0;
+        }
+
+        .result-sub {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        /* PRZYCISK CTA */
+        .cta-btn {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent), rgba(139, 92, 246, 0.8));
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+        }
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(139, 92, 246, 0.4);
+        }
+
+        .cta-btn.form-btn {
+            background: linear-gradient(135deg, var(--success), rgba(16, 185, 129, 0.8));
+        }
+
+        .cta-btn.form-btn:hover {
+            box-shadow: 0 8px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .info-text {
+            font-size: 11px;
+            color: var(--muted);
+            text-align: center;
+            margin-top: 15px;
+            line-height: 1.4;
+        }
+
+        /* DODATKOWE STYLE */
+        .currency-symbol {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .validation-error {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 5px rgba(239, 68, 68, 0.3) !important;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .calc-container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .result-value {
+                font-size: 32px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ANIMACJE */
+        .result-box {
+            transition: all 0.3s ease;
+        }
+
+        .result-value {
+            transition: color 0.3s ease;
+        }
+
+        /* TOOLTIPS */
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+
+<div class="calc-container">
+    <h2>DGFINANCES - Sprawdź Zdolność Kredytową</h2>
+
+    <!-- Disclaimer -->
+    <div style="background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(220,38,38,0.05)); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+        <div style="width:24px; height:24px; background:#ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:14px;">!</div>
+        <div style="font-weight:600; color:#ef4444;">WAŻNE - Przeczytaj przed użyciem</div>
+      </div>
+      <div style="font-size:13px; line-height:1.5; color:#93a4b8;">
+        Ten kalkulator służy wyłącznie do <strong>wstępnych szacunków</strong>. Rzeczywista zdolność kredytowa zależy od:
+        • Szczegółowej analizy bankowej • Historii kredytowej BIK • Rodzaju zatrudnienia • Polityki banku<br>
+        <strong>Dla dokładnej analizy i najlepszej oferty umów się na bezpłatną konsultację.</strong>
+      </div>
+    </div>
+
+    <!-- Usage limit info -->
+    <div id="usageInfo" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 12px; margin-bottom: 16px; font-size: 13px;">
+      💡 Pozostało <span id="remainingUses">3</span> bezpłatnych sprawdzeń
+    </div>
+
+    <div class="input-group">
+        <label class="tooltip" data-tooltip="Podaj swój miesięczny dochód netto (kwota na rękę po odliczeniu podatków)">
+            Dochód Netto (na rękę miesięcznie):
+        </label>
+        <input type="number" id="income" value="5000" step="100" min="0" placeholder="np. 5000">
+        <small style="color:var(--muted); font-size:11px;">Kwota w PLN po odliczeniu podatków</small>
+    </div>
+
+    <div class="input-group">
+        <label class="tooltip" data-tooltip="Wybierz liczbę osób w Twoim gospodarstwie domowym">
+            Liczba osób w gospodarstwie:
+        </label>
+        <select id="family">
+            <option value="1">1 osoba (Single)</option>
+            <option value="2" selected>2 osoby (Para)</option>
+            <option value="3">3 osoby</option>
+            <option value="4">4 osoby</option>
+            <option value="5">5+ osób</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label class="tooltip" data-tooltip="Podaj sumę wszystkich miesięcznych rat kredytów, które obecnie spłacasz">
+            Suma rat innych kredytów:
+        </label>
+        <input type="number" id="liabilities" value="0" min="0" placeholder="np. 500">
+        <small style="color:var(--muted); font-size:11px;">Miesięczne raty wszystkich kredytów</small>
+    </div>
+
+    <div class="input-group">
+        <label class="tooltip" data-tooltip="Podaj sumę wszystkich limitów na kartach kredytowych i kontech ROR (bank liczy 5% jako obciążenie)">
+            Limity na kartach / Debety:
+        </label>
+        <input type="number" id="limits" value="0" min="0" placeholder="np. 2000">
+        <small style="color:var(--muted); font-size:11px;">Suma przyznanych limitów (bank liczy 5% miesięcznie)</small>
+    </div>
+
+    <div class="input-group">
+        <label class="tooltip" data-tooltip="Wybierz okres spłaty kredytu - dłuższy okres = mniejsza rata, ale wyższe odsetki">
+            Okres kredytowania: <span id="monthsDisplay" style="color:var(--accent); font-weight:bold;">60</span> mies. (<span id="yearsDisplay" style="color:var(--muted);">5 lat</span>)
+        </label>
+        <input type="range" id="months" min="12" max="360" value="60" step="6">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 5px;">
+            <span>1 rok</span>
+            <span>30 lat</span>
+        </div>
+    </div>
+
+    <div class="result-box">
+        <div class="result-label">Maksymalna Kwota Kredytu</div>
+        <div class="result-value" id="maxLoan">0 PLN</div>
+        <div class="result-sub">Przy bezpiecznej racie ok. <span id="safeInstallment" style="font-weight:bold;">0 PLN</span>/mies.</div>
+    </div>
+
+    <!-- STATYSTYKI DODATKOWE -->
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-label">DTI Ratio</div>
+            <div class="stat-value" id="dtiRatio">0%</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Koszt kredytu</div>
+            <div class="stat-value" id="totalCost">0 PLN</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Oprocentowanie</div>
+            <div class="stat-value">10% rocznie</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Dochód dostępny</div>
+            <div class="stat-value" id="availableIncome">0 PLN</div>
+        </div>
+    </div>
+
+    <a href="tel:+48533877454" class="cta-btn">
+        📞 Zadzwoń: 533-877-454
+    </a>
+
+    <a href="#formularz" class="cta-btn form-btn" style="margin-top: 15px;">
+        📝 Wypełnij formularz kontaktowy
+    </a>
+
+    <div class="info-text">
+        *Wynik jest symulacją szacunkową przy oprocentowaniu 10% rocznie.<br>
+        Ostateczna decyzja zależy od oceny punktowej BIK i polityki banku.<br>
+        <strong>Skontaktuj się z nami, aby uzyskać szczegółową analizę Twojej zdolności kredytowej.</strong>
+    </div>
+</div>
+
+<!-- Sekcja kontaktowa -->
+<div id="contactSection" class="calc-container" style="display:none; margin-top:20px;">
+    <h3 style="text-align:center; color:var(--accent); margin-bottom:20px;">📞 Skontaktuj się z ekspertem</h3>
+    
+    <form onsubmit="submitContactForm(); return false;">
+        <div class="input-group">
+            <label for="clientName">Imię i nazwisko *</label>
+            <input type="text" id="clientName" required placeholder="Wpisz swoje imię i nazwisko">
+        </div>
+        
+        <div class="input-group">
+            <label for="clientPhone">Telefon *</label>
+            <input type="tel" id="clientPhone" required placeholder="+48 600 000 000">
+        </div>
+        
+        <div class="input-group">
+            <label for="clientEmail">Email</label>
+            <input type="email" id="clientEmail" placeholder="kontakt@dgloans.net">
+            <div id="emailError" class="error" style="display:none;"></div>
+        </div>
+        
+        <button type="submit" style="width:100%; background:var(--accent); color:white; border:none; padding:12px; border-radius:8px; font-weight:600; cursor:pointer; margin-top:10px;">
+            📧 Wyślij zapytanie
+        </button>
+    </form>
+</div>
+
+<script>
+            // Walidacja e-mail
+            function isValidEmail(email) {
+                return /^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(email);
+            }
+
+            // Walidacja na blur
+            document.getElementById('clientEmail').addEventListener('blur', function() {
+                const email = this.value.trim();
+                const errorDiv = document.getElementById('emailError');
+                if (!isValidEmail(email)) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = 'Podaj poprawny adres e-mail.';
+                        console.error('Błąd walidacji: niepoprawny email:', email);
+                } else {
+                    errorDiv.style.display = 'none';
+                }
+            });
+    // JEDEN WEBHOOK DLA WSZYSTKICH KALKULATORÓW - AKTYWNY URL!
+    const KALKULATORY_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx3eZrmbp3YT6Aqc1cn9E0aChQpX9MIt_5cayoYp6FZmvQGwNF6FH1GKKieNk1uIwswxQ/exec';
+
+    // Calculation limits
+    // Validation and formatting functions for phone
+    function isValidPhone(v) {
+      if (!v) return false;
+      const trimmed = v.trim();
+      // If starts with +, validate E.164-ish: + followed by 2..15 digits
+      if (trimmed.startsWith('+')) {
+        return /^\+[1-9][0-9]{1,14}$/.test(trimmed.replace(/[^0-9\+]/g, ''));
+      }
+      // Otherwise accept local-ish numbers with 6-15 digits
+      const digits = trimmed.replace(/[^0-9]/g, '');
+      return digits.length >= 6 && digits.length <= 15;
+    }
+
+    function phoneMaskFormat(raw) {
+      if (!raw) return '';
+      const hasPlus = raw.trim().startsWith('+');
+      let digits = raw.replace(/\D/g, '');
+      // If user entered + and then digits, keep +
+      if (hasPlus && digits.length > 0) {
+        // Try to detect country code (1-3 digits) - for simplicity assume 2 for PL
+        if (digits.startsWith('48')) {
+          const cc = '48';
+          const rest = digits.slice(2);
+          const groups = [];
+          if (rest.length > 0) groups.push(rest.slice(0,3));
+          if (rest.length > 3) groups.push(rest.slice(3,6));
+          if (rest.length > 6) groups.push(rest.slice(6,9));
+          return '+' + cc + (groups.length ? ' ' + groups.join(' ') : '');
+        }
+        // Generic grouping in 3s
+        const parts = [];
+        for (let i = 0; i < digits.length; i += 3) parts.push(digits.slice(i, i+3));
+        return '+' + parts.join(' ');
+      }
+      // No plus: format local groups (for PL aim for 3-3-3)
+      if (digits.startsWith('48')) digits = digits.slice(2);
+      const out = [];
+      if (digits.length <= 3) return digits;
+      out.push(digits.slice(0,3));
+      if (digits.length > 3) out.push(digits.slice(3,6));
+      if (digits.length > 6) out.push(digits.slice(6,9));
+      return out.join(' ');
+    }
+
+    let calculationCount = parseInt(localStorage.getItem('creditCapacityCalcCount') || '0');
+    const MAX_FREE_CALCULATIONS = 3;
+
+    function checkUsageLimit() {
+        document.getElementById('remainingUses').textContent = Math.max(0, MAX_FREE_CALCULATIONS - calculationCount);
+        
+        if (calculationCount >= MAX_FREE_CALCULATIONS) {
+            showUsageLimitReached();
+            return false;
+        }
+        return true;
+    }
+
+    function showUsageLimitReached() {
+        document.getElementById('usageInfo').innerHTML = `
+            <div style="background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05)); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 16px; text-align: center;">
+                <div style="font-weight:600; margin-bottom:8px; color: #ef4444;">🔒 Osiągnięto limit bezpłatnych sprawdzeń (${MAX_FREE_CALCULATIONS})</div>
+                <div style="font-size:13px; color:#93a4b8; margin-bottom:12px;">Aby kontynuować korzystanie i otrzymać dokładną analizę, skontaktuj się z ekspertem.</div>
+                <button onclick="showContactForm()" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;">📞 Odblokuj pełny dostęp</button>
+            </div>
+        `;
+    }
+
+    function showContactForm() {
+        document.getElementById('contactSection').style.display = 'block';
+        document.getElementById('clientName').focus();
+    }
+
+    function hideContactForm() {
+        document.getElementById('contactSection').style.display = 'none';
+    }
+
+    function submitContactForm() {
+        const name = document.getElementById('clientName').value.trim();
+        const phone = document.getElementById('clientPhone').value.trim();
+        const email = document.getElementById('clientEmail').value.trim();
+
+        if (!name || !phone) {
+            alert('Wypełnij wymagane pola: Imię i telefon');
+                console.error('Błąd walidacji: brak imienia lub telefonu', {name, phone});
+            return;
+        }
+
+        if (!isValidPhone(phone)) {
+            alert('Podaj prawidłowy numer telefonu');
+                console.error('Błąd walidacji: niepoprawny numer telefonu', phone);
+            return;
+        }
+
+        // Pobierz aktualne dane kalkulacji
+        const currentCalc = {
+            income: parseFloat(document.getElementById('income').value) || 0,
+            family: parseInt(document.getElementById('family').value) || 1,
+            liabilities: parseFloat(document.getElementById('liabilities').value) || 0,
+            limits: parseFloat(document.getElementById('limits').value) || 0,
+            months: parseInt(document.getElementById('months').value) || 0,
+            maxLoanAmount: document.getElementById('maxLoan').textContent,
+            safeInstallment: document.getElementById('safeInstallment').textContent
+        };
+
+        // Przygotuj dane do wysłania
+        const leadData = {
+            calculatorType: 'credit_capacity',
+            contact: {
+                name: name,
+                phone: phone,
+                email: email
+            },
+            calculation: currentCalc,
+            timestamp: new Date().toISOString()
+        };
+
+            console.log('Wysyłanie formularza kontaktowego:', leadData);
+        // Wyślij do Google Apps Script
+        sendToGoogleSheets(leadData, name, phone);
+    }
+
+    async function sendToGoogleSheets(leadData, name, phone) {
+        const contactSection = document.getElementById('contactSection');
+        
+        try {
+            contactSection.innerHTML = `
+                <div style="text-align:center; padding:20px;">
+                    <div style="font-size:24px; margin-bottom:16px;">🔄</div>
+                    <div style="font-size:16px; color:#a78bfa;">Wysyłanie...</div>
+                </div>
+            `;
+
+            await fetch(KALKULATORY_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(leadData),
+                mode: 'no-cors'
+            });
+
+            showSuccessMessage(name, phone);
+            
+        } catch (error) {
+            console.error('Błąd wysyłania:', error);
+            showSuccessMessage(name, phone);
+        }
+    }
+
+    function showSuccessMessage(name, phone) {
+        // Reset calculation limit for contacted users
+        localStorage.setItem('creditCapacityCalcCount', '0');
+        calculationCount = 0;
+        
+        const contactSection = document.getElementById('contactSection');
+        contactSection.innerHTML = `
+            <div style="text-align:center; padding:20px;">
+                <div style="font-size:48px; margin-bottom:16px;">✅</div>
+                <div style="font-size:18px; font-weight:600; margin-bottom:8px; color:#a78bfa;">Dziękujemy ${name}!</div>
+                <div style="font-size:14px; color:#93a4b8;">Nasz ekspert skontaktuje się w ciągu 24h pod numerem ${phone}</div>
+            </div>
+        `;
+        
+        // Refresh usage info
+        checkUsageLimit();
+    }
+    // Inicjalizacja kalkulatora po załadowaniu strony
+    document.addEventListener('DOMContentLoaded', function() {
+        calculate();
+        addValidation();
+    });
+
+    function addValidation() {
+        // Dodanie walidacji dla pól numerycznych
+        const numericInputs = ['income', 'liabilities', 'limits'];
+        numericInputs.forEach(id => {
+            const input = document.getElementById(id);
+            input.addEventListener('input', function() {
+                // Usuń znaki niebędące cyframi ani kropką
+                this.value = this.value.replace(/[^0-9.]/g, '');
+                // Zapobiegnij wprowadzaniu więcej niż jednej kropki
+                if ((this.value.match(/\./g) || []).length > 1) {
+                    this.value = this.value.slice(0, -1);
+                }
+                calculate();
+            });
+            
+            input.addEventListener('blur', function() {
+                // Formatowanie wartości po opuszczeniu pola
+                const value = parseFloat(this.value) || 0;
+                this.value = value;
+                if (value < 0) {
+                    this.value = 0;
+                    calculate();
+                }
+            });
+        });
+    }
+
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('pl-PL', {
+            style: 'decimal',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(amount) + ' PLN';
+    }
+
+    function calculate() {
+        // Check calculation limit
+        if (!checkUsageLimit()) {
+            return;
+        }
+
+        try {
+            // 1. POBIERANIE I WALIDACJA WARTOŚCI
+            let income = Math.max(0, parseFloat(document.getElementById('income').value) || 0);
+            let family = parseInt(document.getElementById('family').value);
+            let liabilities = Math.max(0, parseFloat(document.getElementById('liabilities').value) || 0);
+            let limits = Math.max(0, parseFloat(document.getElementById('limits').value) || 0);
+            let months = parseInt(document.getElementById('months').value);
+
+            // Aktualizacja wyświetlania suwaka
+            document.getElementById('monthsDisplay').innerText = months;
+            document.getElementById('yearsDisplay').innerText = Math.round(months / 12 * 10) / 10 + ' lat';
+
+            // 2. PARAMETRY BANKOWE (Realistyczne wartości na podstawie praktyki bankowej)
+            // Koszty życia według minimum socjalnego (2024)
+            const costPerPerson = family === 1 ? 1200 : 
+                                 family === 2 ? 2000 :
+                                 family === 3 ? 2500 :
+                                 family === 4 ? 3000 : 3500;
+            
+            // Ile % limitu karty bank liczy jako obciążenie (standardowo 5%)
+            const limitFactor = 0.05;
+            
+            // Szacowane oprocentowanie kredytu (średnia rynkowa 2024)
+            const interestRate = 0.10; // 10% rocznie
+            const monthlyRate = interestRate / 12;
+            
+            // Maksymalny wskaźnik zadłużenia (DTI - Debt to Income, zwykle 65-70%)
+            const maxDTI = 0.65;
+            
+            // Margines bezpieczeństwa (banki zostawiają 10-20% buforu)
+            const safetyMargin = 0.85;
+
+            // 3. OBLICZENIA ZDOLNOŚCI KREDYTOWEJ
+            
+            // Dochód dostępny (po kosztach życia)
+            const availableIncome = Math.max(0, income - costPerPerson);
+            
+            // Obecne obciążenia (raty + 5% limitów kart)
+            const currentObligations = liabilities + (limits * limitFactor);
+            
+            // Maksymalna rata według DTI
+            const maxTotalPayments = income * maxDTI;
+            const maxNewInstallment = Math.max(0, maxTotalPayments - currentObligations);
+            
+            // Bezpieczna rata (z marginesem bezpieczeństwa)
+            const safeInstallment = Math.max(0, maxNewInstallment * safetyMargin);
+            
+            // Maksymalna kwota kredytu przy bezpiecznej racie
+            let maxLoanAmount = 0;
+            
+            if (safeInstallment > 0 && monthlyRate > 0) {
+                // Wzór na kwotę kredytu: P = PMT * [(1 - (1 + r)^(-n)) / r]
+                const discountFactor = (1 - Math.pow(1 + monthlyRate, -months)) / monthlyRate;
+                maxLoanAmount = safeInstallment * discountFactor;
+            }
+
+            // 4. DODATKOWE SPRAWDZENIA I OGRANICZENIA
+            
+            // Minimalna kwota kredytu (banki rzadko dają poniżej 10,000 PLN)
+            const minLoan = 10000;
+            if (maxLoanAmount < minLoan) {
+                maxLoanAmount = 0;
+            }
+            
+            // Maksymalna kwota (ograniczenie rynkowe - zwykle do 2 mln PLN)
+            const maxMarketLoan = 2000000;
+            if (maxLoanAmount > maxMarketLoan) {
+                maxLoanAmount = maxMarketLoan;
+            }
+
+            // 5. AKTUALIZACJA INTERFEJSU
+            const maxLoanElement = document.getElementById('maxLoan');
+            const safeInstallmentElement = document.getElementById('safeInstallment');
+            const dtiRatioElement = document.getElementById('dtiRatio');
+            const totalCostElement = document.getElementById('totalCost');
+            const availableIncomeElement = document.getElementById('availableIncome');
+            
+            // Obliczenia dla dodatkowych statystyk
+            const currentDTI = ((currentObligations + safeInstallment) / income) * 100;
+            const totalInterest = (safeInstallment * months) - maxLoanAmount;
+            
+            if (maxLoanAmount > 0) {
+                maxLoanElement.textContent = formatCurrency(Math.round(maxLoanAmount));
+                maxLoanElement.style.color = '#10b981'; // Zielony
+                safeInstallmentElement.textContent = formatCurrency(Math.round(safeInstallment));
+            } else {
+                maxLoanElement.textContent = 'Brak zdolności';
+                maxLoanElement.style.color = '#ef4444'; // Czerwony
+                safeInstallmentElement.textContent = '0 PLN';
+            }
+
+            // Aktualizacja dodatkowych statystyk
+            dtiRatioElement.textContent = Math.round(currentDTI) + '%';
+            dtiRatioElement.style.color = currentDTI > 65 ? '#ef4444' : '#10b981';
+            
+            totalCostElement.textContent = formatCurrency(Math.max(0, Math.round(totalInterest)));
+            availableIncomeElement.textContent = formatCurrency(Math.round(availableIncome));
+
+            // 6. DODATKOWE INFORMACJE W KONSOLI (dla debugowania)
+            console.log({
+                income: income,
+                availableIncome: availableIncome,
+                costPerPerson: costPerPerson,
+                currentObligations: currentObligations,
+                maxNewInstallment: maxNewInstallment,
+                safeInstallment: safeInstallment,
+                maxLoanAmount: maxLoanAmount,
+                months: months,
+                interestRate: (interestRate * 100).toFixed(1) + '%'
+            });
+
+        } catch (error) {
+            console.error('Błąd w obliczeniach:', error);
+            document.getElementById('maxLoan').textContent = 'Błąd';
+            document.getElementById('safeInstallment').textContent = '0 PLN';
+        }
+
+        // Increment calculation count
+        calculationCount++;
+        try {
+            localStorage.setItem('creditCapacityCalcCount', calculationCount.toString());
+        } catch (e) {}
+        
+        // Update usage info
+        checkUsageLimit();
+    }
+
+    // Initialize usage check on load
+    checkUsageLimit();
+    
+    // Auto-calculate on load
+    calculate();
+</script>
+
+</body>
+</html>
